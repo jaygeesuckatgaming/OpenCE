@@ -1,3 +1,5 @@
+This Fork is using my AI System - > https://github.com/jaygeesuckatgaming/Gem-System-v2
+
 # OpenCE - Halo: Combat Evolved for Linux, Windows, Android and the web
 
 <p align="center">
