@@ -240,6 +240,7 @@ symbols in this file:
 #include "render/render_debug.h"
 #include "scenario/scenario.h"
 #include "tag_files/tag_files.h"
+#include "companion.h" /* port: port/linux/game/companion.c */
 
 #include <math.h>
 #include <stdio.h>
@@ -1156,6 +1157,15 @@ static real sound_manager_master_gain(
 	}
 
 	return gain;
+}
+
+/* port: the gain the sound manager gives a sound of the class (the class's,
+the player's volume setting, and other sounds ducked under scripted
+dialogue): for the voice of Kevin (port/linux/game/companion.c) */
+real sound_manager_port_class_gain(
+	short class_index)
+{
+	return sound_manager_master_gain(class_index);
 }
 
 static void sound_delete(
@@ -2372,6 +2382,8 @@ static void update_channel_for_impulse_sound(
 			0x79A,
 			sound_cache_sound_loaded(permutation));
 		channel_set_properties_hardware(channel_index, &properties, FALSE);
+		/* port: Kevin, the campaign's teammate, hears the dialogue */
+		companion_note_sound(sound->definition_index, permutation, sound->source_identifier);
 		channel_queue_sound(channel_index, permutation);
 		sound->playing_channel_index = channel_index;
 	}

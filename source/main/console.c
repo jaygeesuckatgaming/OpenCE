@@ -60,6 +60,7 @@ symbols in this file:
 #include "hs/hs.h"
 #include "networking/network_server_manager.h"
 #include "network_votekick.h" /* port: port/linux/game/network_votekick.c */
+#include "companion.h" /* port: port/linux/game/companion.c */
 #include "input/input.h"
 #include "interface/terminal.h"
 #include "math/real_math.h"
@@ -235,6 +236,11 @@ static boolean console_process_command(
 
 	console_globals.previous_command_count = MIN(console_globals.previous_command_count + 1, MAXIMUM_NUMBER_OF_PREVIOUS_COMMANDS);
 	console_globals.selected_previous_command_index = NONE;
+
+	/* port: "kevin <anything>", a game master's line for Kevin, the campaign's
+	teammate (port/linux/game/companion.c), not a script */
+	if (companion_console_command(command))
+		return TRUE;
 
 	return hs_compile_and_evaluate(command);
 }

@@ -182,6 +182,7 @@ struct game_options;
 #include "units/units.h"
 #include "units/vehicles.h"
 #include "network_coop.h" /* port: port/linux/game/network_coop.c */
+#include "companion.h" /* port: port/linux/game/companion.c */
 #ifdef HALO_PROFILE
 #include "profile_console.h" /* port: port/linux/game/profile_console.c */
 #endif
@@ -386,6 +387,8 @@ void game_tick(
 	decisions that belong to the host. */
 	if (!(network_game_distributed_client() && network_coop_active()))
 		profile_scope(game_tick_hs_section, hs_update();)
+	/* port: Kevin, the campaign's red teammate */
+	companion_update();
 	profile_scope(game_tick_recorded_animations_section, recorded_animations_update();)
 	profile_scope(game_tick_objects_section, objects_update();)
 	profile_scope(game_tick_players_after_section, players_update_after_game();)

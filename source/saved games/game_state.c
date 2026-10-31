@@ -117,6 +117,7 @@ symbols in this file:
 #include "structures.h"
 #include "director.h"
 #include "hud_messaging.h"
+#include "companion.h" /* port: port/linux/game/companion.c */
 #include "crc.h"
 #include "data.h"
 #include "lruv_cache.h"
@@ -207,7 +208,9 @@ static game_state_after_load_proc after_load_procs[] =
 	game_state_set_revert_time,
 	player_control_fix_for_loaded_game_state,
 	director_initialize_for_saved_game,
-	scripted_hud_messages_clear
+	scripted_hud_messages_clear,
+	/* port: Kevin's memory comes back with the save */
+	companion_note_loaded
 };
 
 /* ---------- public code */
@@ -328,6 +331,9 @@ void game_state_save(
 	game_state_globals.saved_game_valid = (game_state_write_to_file()!=FALSE);
 	main_start_time();
 	game_state_note_event("checkpoint saved");
+	/* port: Kevin's memory goes with the save */
+	if (game_state_globals.saved_game_valid)
+		companion_note_saved();
 
 	return;
 }

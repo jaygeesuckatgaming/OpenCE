@@ -249,6 +249,30 @@ SCREENS["network_setup/map_sharing"] = {
     ],
 }
 
+# Kevin Setup: the campaign's red teammate (port/linux/game/companion.c, and
+# mate, which keeps the speech cooldown), a screen of his own on the profile
+# menu, after About (KEVIN_PROFILE_ITEM)
+# (a volume's steps: about 5 dB each, 5 as he speaks, 10 sixteen times as loud)
+KEVIN_VOLUMES = [("0", "0")] + [(str(step), f"{round(2 ** ((step - 5) / 1.25), 2):g}") for step in range(1, 11)]
+SCREENS["kevin_setup"] = {
+    "screen": "kevin_settings_screen",
+    "header": ("header_kevin_settings", f"{PE}/kevin_setup/header_kevin_settings"),
+    "spacing": 30,
+    "rows": [
+        ("SPEECH COOLDOWN:", "companion.speech_cooldown",
+         [(f"{seconds} S", str(seconds)) for seconds in (0, 1, 2, 3, 5, 8, 10, 15, 20, 30)],
+         "After his voice stops, how long before the fight\ncan get him talking again (you, at once).", None),
+        ("WORLD VOLUME:", "companion.voice_volume", KEVIN_VOLUMES,
+         "His voice beside you: 5 as he speaks, each step\nup about 5 dB louder.", None),
+        ("RADIO VOLUME:", "companion.radio_volume", KEVIN_VOLUMES,
+         "His voice over the radio: 5 as the radio has it,\neach step up about 5 dB louder.", None),
+        ("RADIO DISTANCE:", "companion.radio_distance",
+         [(f"{metres} M", str(metres)) for metres in (10, 15, 20, 25, 30, 40, 50, 60)],
+         "Farther off than this, or out of sight, he talks\nover the radio.", None),
+    ],
+}
+KEVIN_PROFILE_ITEM = f"{PE}/kevin_setup_profile_item"
+
 # Controls Setup: the keyboard and mouse's actions, in groups (the order of
 # port/linux/game/menu_functions.c's table of them)
 CONTROL_GROUPS = ["MOVEMENT", "WEAPONS", "ACTIONS"]
@@ -298,6 +322,7 @@ STRING_OVERRIDES = {
         "Internet play, updates and the\\nmultiplayer HUD.\\n\\nProfile:",
         "Change the current profile's\\nfree-for-all multiplayer color.\\n\\nProfile:",
         "Halo: Combat Evolved, the Xbox\\ngame, on this computer.\\n\\nProfile:",
+        "Kevin's voices and how soon he\\ntalks again after he stops.\\n\\nProfile:",
     ],
 }
 
@@ -502,12 +527,25 @@ def _controls_screen() -> list:
                    extra)
 
 
+def _kevin_profile_item() -> list:
+    """the profile menu's KEVIN SETUP, after About, as its other items are"""
+    target = f"{PE}/kevin_setup/{SCREENS['kevin_setup']['screen']}"
+    return _widget(KEVIN_PROFILE_ITEM,
+                   [("type", "text"), ("left", 51), ("top", 375), ("width", 232), ("height", 32),
+                    ("bitmap", "bitmaps/list_item_bkd"), ("string_list", f"{PE}/profile_edit_options"),
+                    ("string_index", 10), ("font", "ui\\large_ui"), ("color", "#FF2896FF"), ("text_x", 13),
+                    ("text_y", 5)],
+                   [f'<on event="a" open="{target}"/>', f'<on event="start" open="{target}"/>',
+                    '<on event="left_mouse" run="mouse emit accept event"/>'])
+
+
 def settings_files() -> dict:
     """the files of the port's screens, by their names in ce/"""
     files = {}
     for folder, spec in SCREENS.items():
         files[f"{PE}/{folder}".replace("/", ".") + ".xml"] = _setting_screen(folder, spec)
     files[f"{PE}/controls_setup".replace("/", ".") + ".xml"] = _controls_screen()
+    files[f"{PE}/kevin_setup".replace("/", ".") + ".xml"] += _kevin_profile_item()
     return {name: ['<?xml version="1.0" encoding="UTF-8"?>',
                    "<!-- The port's settings screen, in the PC version's style (tools/port_settings.py) -->",
                    "<menus>", *lines, "</menus>", ""] for name, lines in files.items()}
@@ -536,6 +574,8 @@ STRING_INSERTS = {
     f"{TEAMPLAY_EDIT}/teamplay_options_labels": [(3, [label for _, label, *_ in TEAMPLAY_ROWS])],
     f"{TEAMPLAY_EDIT}/cap_teamplay_options": [(10, [text for *_, helps in TEAMPLAY_ROWS for text in helps])],
     f"{SLAYER_EDIT}/var_kills_to_win": [(5, ["75", "100", "150", "200", "250", "500"])],
+    # (the profile menu's Kevin Setup, after About: KEVIN_PROFILE_ITEM)
+    f"{PE}/profile_edit_options": [(10, ["KEVIN SETUP"])],
     f"{SLAYER_EDIT}/cap_slayer": [(11, [
         "Seventy-five kills to win. Settle in for a long\\nfight.",
         "A hundred kills to win. Made for big games.",
@@ -618,6 +658,10 @@ MAP_KIND_CHOOSER = "main_menu/new_select/list_item_0_map_kind"
 # changes to the PC version's widgets (by our names): attributes set, all
 # their handlers replaced, children added, game data inputs added
 WIDGET_PATCHES = {
+    # (the profile menu's Kevin Setup, after About: KEVIN_PROFILE_ITEM)
+    f"{PE}/profile_edit_select_list": {"insert_before": {
+        f"{PE}/profile_edit_button_bar": [f'<child widget="{KEVIN_PROFILE_ITEM}"/>'],
+    }},
     # (the profile settings' picture: on Gamepad Setup's row, the profile's
     # button settings, BITMAP_FRAMES; menu_functions.c's
     # profile_gamepad_layout)
@@ -707,14 +751,16 @@ WIDGET_PATCHES = {
 }
 
 # frames added after a PC bitmap's (by our names): (the Xbox map's bitmap,
-# its frame, the size drawn at, where in the widget). The profile settings'
-# picture gets the Xbox's Controller Setup's pictures of its five button
-# settings (its first four frames are the thumbstick settings'), which show
-# 512 by 235 of their 512 by 512: drawn at 279 wide, in the middle of the
-# picture's 279 by 202
+# its frame, the size drawn at, where in the widget), or (None, a frame of the
+# bitmap's own, drawn again). The profile settings' picture gets Kevin Setup's
+# (Audio Setup's again, the row after the PC version's nine), then the Xbox's
+# Controller Setup's pictures of its five button settings (its first four
+# frames are the thumbstick settings'), which show 512 by 235 of their 512 by
+# 512: drawn at 279 wide, in the middle of the picture's 279 by 202
 XBOX_CONTROLLER_PICTURES = f"ui\\shell\\{PE.replace('/', chr(92))}\\controller_edit\\config_controller"
 BITMAP_FRAMES = {
-    f"{PE}/profile_options": [(XBOX_CONTROLLER_PICTURES, 4 + preset, 279, 279, 0, 34) for preset in range(5)],
+    f"{PE}/profile_options": [(None, 4, 0, 0, 0, 0)] +
+                              [(XBOX_CONTROLLER_PICTURES, 4 + preset, 279, 279, 0, 34) for preset in range(5)],
 }
 
 # the titles this port has that the PC version has not, set as its headers
@@ -726,6 +772,7 @@ TITLES = {
     f"{MT}/lobby/header_lobby": "GAME LOBBY",
     f"{MT}/coop/header_player_2": "PLAYER 2 PROFILE",
     f"{MT}/lobby/header_add_player": "ADD PLAYER",
+    f"{PE}/kevin_setup/header_kevin_settings": "KEVIN SETUP",
 }
 
 

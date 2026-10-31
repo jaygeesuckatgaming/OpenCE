@@ -83,6 +83,9 @@ boolean sound_refresh_looping(
 	short refresh_state,
 	boolean alternate,
 	real fade_time);
+/* port: port/linux/game/companion.c */
+real sound_manager_port_class_gain(
+	short class_index);
 
 /* ---------- globals */
 

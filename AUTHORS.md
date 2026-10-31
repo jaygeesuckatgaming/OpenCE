@@ -14,7 +14,8 @@
 ## Third-party art
 
 - **Voice chat's speaker icons** (who talks, and who is muted, in the lobby,
-  on the scoreboard and in the game): `volume-2` and `volume-x` from
+  on the scoreboard and in the game) and **Kevin's microphone icon** (open or
+  muted): `volume-2`, `volume-x`, `mic` and `mic-off` from
   [Lucide](https://lucide.dev) 1.53.0, copyright (c) 2026 Lucide Icons and
   Contributors, under the ISC licence
   (`port/assets/icons/lucide/LICENSE`).

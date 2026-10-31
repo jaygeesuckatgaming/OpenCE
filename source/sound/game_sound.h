@@ -97,6 +97,13 @@ void compute_sound_obstruction(
 	short local_player_index,
 	struct sound_source *source,
 	real distance);
+/* port: port/linux/game/companion.c */
+void game_sound_port_obstruction(
+	short local_player_index,
+	real_point3d const *position,
+	struct location const *game_location,
+	real *obstruction,
+	real *occlusion);
 void game_sound_set_mouth_aperture(
 	long object_index,
 	real mouth_aperture);

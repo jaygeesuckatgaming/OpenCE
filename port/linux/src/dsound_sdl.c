@@ -38,6 +38,7 @@ turns the reverb off; audio.enabled = false skips opening a device
 #include "sdl_platform.h"
 #include "port_config.h"
 #include "voice_audio.h"
+#include "mate_link.h"
 
 #include <SDL3/SDL.h>
 #include <math.h>
@@ -303,6 +304,19 @@ static short *decode_adpcm(const unsigned char *source, unsigned long size, unsi
 	}
 	*frame_count = blocks * XBOX_ADPCM_BLOCK_SAMPLES;
 	return samples;
+}
+
+/* (companion.c's: the dialogue Kevin hears; game code's free is the game's
+allocator, so the samples are freed here) */
+short *dsound_decode_xbox_adpcm(const unsigned char *source, unsigned long size, unsigned long channels,
+	unsigned long *frame_count)
+{
+	return decode_adpcm(source, size, channels, frame_count);
+}
+
+void dsound_free_decoded(short *samples)
+{
+	free(samples);
 }
 
 static short *decode_pcm(const unsigned char *source, unsigned long size, unsigned long channels,
@@ -1264,6 +1278,9 @@ static void mix(float *output, unsigned long frames)
 
 	memset(output, 0, frames * OUTPUT_CHANNELS * sizeof(float));
 	memset(reverb.send, 0, frames * sizeof(float));
+	/* the campaign teammate's voice (mate_link.c) into its stream, which
+	plays as the others do */
+	mate_link_feed(frames);
 	pthread_mutex_lock(&mixer_lock);
 	for (stream = streams; stream; stream = stream->next)
 		mix_voice(stream, output, reverb.send, frames);

@@ -366,8 +366,13 @@ class Art:
             self.draw(relative, index, len(data), width, height, MENUS / png, self.shown.get(tag, []))
             self.pngs.append(png)
             lines.append(f"\t\t<frame{attributes([('png', png), ('width', width), ('height', height)])}/>")
-        # (the port's frames after them: the Xbox map's, scaled)
+        # (the port's frames after them: the Xbox map's, scaled, or one of
+        # its own again)
+        own = lines[1:]
         for source, index, width, height, x, y in port_settings.BITMAP_FRAMES.get(our_name(tag), []):
+            if source is None:
+                lines.append(own[index])
+                continue
             self.added_frames.append((our_name(tag), source, index))
             lines.append(f"\t\t<frame{attributes([('map', source), ('index', index), ('width', width), ('height', height), ('x', x or None), ('y', y or None)])}/>")
         lines.append("\t</bitmap>")
@@ -633,6 +638,12 @@ def main() -> None:
         ((ROOT / "port/assets/icons/lucide" / f"{icon}.svg").read_text().replace('stroke="currentColor"',
                                                                                  'stroke="#FFFFFF"'), 24, 24)
         for icon in ("volume-2", "volume-x")]))
+    # (the campaign teammate Kevin's microphone, open and muted: Lucide's,
+    # white for companion.c to tint)
+    lines.append(art.port_picture("voice/microphone", [
+        ((ROOT / "port/assets/icons/lucide" / f"{icon}.svg").read_text().replace('stroke="currentColor"',
+                                                                                 'stroke="#FFFFFF"'), 24, 24)
+        for icon in ("mic", "mic-off")]))
     # (nothing: what a game map draws for a frame of ui.map's it has not,
     # menu_tags.c)
     lines.append(art.port_picture("blank", [

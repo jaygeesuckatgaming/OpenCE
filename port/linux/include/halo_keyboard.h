@@ -38,6 +38,9 @@ enum halo_keyboard_action
 	/* (voice chat's, which the game itself does not read:
 	halo_push_to_talk_held) */
 	HALO_KEYBOARD_PUSH_TO_TALK,
+	/* (the campaign teammate's: mutes and unmutes the microphone he hears
+	you by, port/linux/game/companion.c: halo_kevin_mic_held) */
+	HALO_KEYBOARD_KEVIN_MIC,
 	NUMBER_OF_HALO_KEYBOARD_ACTIONS
 };
 
@@ -48,5 +51,8 @@ unsigned long halo_keyboard_actions(short controller_index);
 /* whether voice chat's push to talk is held (controls.push_to_talk), in the
 game and in the menus alike */
 int halo_push_to_talk_held(void);
+/* whether the campaign teammate's microphone key is held (controls.kevin_mic),
+in the game and in the menus alike */
+int halo_kevin_mic_held(void);
 
 #endif

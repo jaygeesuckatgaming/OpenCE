@@ -105,6 +105,7 @@ symbols in this file:
 #include "units/unit_definitions.h"
 #include "units/units.h"
 #include "map_share.h" /* port: port/linux/game/map_share.c */
+#include "companion.h" /* port: port/linux/game/companion.c */
 
 /* ---------- constants */
 
@@ -719,6 +720,8 @@ void interface_draw_screen(
 
 	hud_draw_screen();
 	game_engine_post_rasterize();
+	/* port: the microphone the campaign's teammate Kevin hears the player by */
+	companion_draw_mic();
 
 	return;
 }

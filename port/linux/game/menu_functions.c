@@ -1623,9 +1623,10 @@ profile's button settings as the Xbox's Controller Setup shows them */
 /* the picture's frames (the bitmap's: tools/port_settings.py's
 BITMAP_FRAMES): Gamepad Setup's row's, as the list numbers its rows
 (player_profile_edit_select_menu_update_extended_description), and after
-the PC version's nine the Xbox's five of the button settings */
+the PC version's nine and Kevin Setup's the Xbox's five of the button
+settings */
 #define PROFILE_GAMEPAD_FRAME 2
-#define PROFILE_FIRST_LAYOUT_FRAME 9
+#define PROFILE_FIRST_LAYOUT_FRAME 10
 
 /* "port gamepad layout preview" (the picture's own): on Gamepad Setup's
 row, the edited profile's button settings */
@@ -1948,6 +1949,7 @@ static struct
 	{ "controls.pause", L"PAUSE MENU", 2 },
 	{ "controls.screenshot", L"SCREENSHOT", 2 },
 	{ "controls.push_to_talk", L"PUSH TO TALK", 2 },
+	{ "controls.kevin_mic", L"KEVIN MIC", 2 },
 };
 
 static struct

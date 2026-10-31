@@ -212,6 +212,7 @@ gamepads' only.
 | pause menu | escape |
 | screenshot | F10 |
 | talk in voice chat (hold) | V |
+| mute or unmute the microphone Kevin, the campaign's teammate, hears you by | M |
 
 Always: \` opens the developer console, F12 releases or captures the mouse,
 F11 changes between fullscreen and window. Screenshot (default F10,
@@ -244,7 +245,8 @@ you push it again.
 The menus are the PC version's (Halo Custom Edition's): its main menu and
 every screen it leads to (campaign, profiles, multiplayer with its server
 browser, direct IP and server setup, the gametype editor, and the profile's
-settings: controls, gamepads, mouse, audio, video, network and colour),
+settings: controls, gamepads, mouse, audio, video, network, colour and
+Kevin's),
 laid out as it has them. Their pictures are the high-res redraws; the few
 that are not yet (3D renders, screenshots) are drawn from the Xbox's own
 menus where it has the same, else a placeholder, listed in
@@ -363,11 +365,15 @@ the setting for one start of the game. It has priority over the file.
 | `audio.voice_volume` | `1.0` | `HALO_VOICE_VOLUME` | The volume of the voices of the other players, `0` to `2`. |
 | `audio.output_device`, `audio.input_device` | `"default"` | `HALO_AUDIO_OUTPUT_DEVICE`, `HALO_AUDIO_INPUT_DEVICE` | The speakers and the microphone, by the name that Settings > Audio shows, or `"default"` for the device of the system. If the device is not found, the game uses the device of the system. Not on Android. |
 | `audio.loose_sounds` | `false` | `HALO_LOOSE_SOUNDS` | For those who make sounds. `true`: each sound of a map that has a sound tag file of its name in `tags/` in the data root (for example `tags/sound/sfx/weapons/assault rifle/fire.sound`) plays from that file. The files are Halo PC tag files, as the Halo Editing Kit and Invader write them. At the console, `loose_sounds_reload` reads the files again, and `loose_sounds false` plays the sounds of the map again. When a file changes, all sounds stop. |
+| `companion.voice_volume` | `1.0` | `HALO_COMPANION_VOICE_VOLUME` | The volume of Kevin's voice beside you, the campaign's red teammate, `0` to `16` (`1`: as he speaks). Kevin Setup's WORLD VOLUME. |
+| `companion.radio_volume` | `1.0` | `HALO_COMPANION_RADIO_VOLUME` | The volume of Kevin's voice over the radio, `0` to `16` (`1`: the radio's own level). Kevin Setup's RADIO VOLUME. |
+| `companion.radio_distance` | `25.0` | `HALO_COMPANION_RADIO_DISTANCE` | How far off, in metres, Kevin talks over the radio (and whenever he is out of sight). Kevin Setup's RADIO DISTANCE. |
+| `companion.speech_cooldown` | `5.0` | `HALO_COMPANION_SPEECH_COOLDOWN` | Seconds after Kevin's voice stops before what happens in the game can have him talk again; talking to him, he answers at once (mate keeps it). Kevin Setup's SPEECH COOLDOWN. |
 | `input.mouse_sensitivity` | `1.0` | `HALO_MOUSE_SENSITIVITY` | The multiplier for the mouse aim. |
 | `input.mouse_vertical_sensitivity` | `0.0` | `HALO_MOUSE_VERTICAL_SENSITIVITY` | The multiplier for the vertical mouse aim. `0`: the same as `input.mouse_sensitivity`. |
 | `input.invert_mouse` | `false` | `HALO_MOUSE_INVERT=1` sets `true` | `true`: the vertical mouse aim is inverted. |
 | `input.mouse_aim_assist` | `false` | `HALO_MOUSE_AIM_ASSIST` | `true`: the magnetism of the controller also operates for the mouse. `false`: when the mouse moved after the right stick, the view is not slowed or dragged by a target. The autoaim of the bullets operates in both cases. |
-| `controls.<action>` | (the table in "Controls") | `HALO_KEY_<ACTION>` | The keys and mouse buttons of an action, up to two, separated by a comma: `move_forward`, `move_backward`, `strafe_left`, `strafe_right`, `jump`, `crouch`, `fire`, `throw_grenade`, `melee`, `reload`, `zoom`, `switch_weapon`, `switch_grenade`, `action`, `flashlight`, `scoreboard`, `pause`, `screenshot`, `push_to_talk`. Keys by their names (`"W"`, `"Space"`, `"Left Ctrl"`, `"F1"`), and `"Mouse Left"`, `"Mouse Right"`, `"Mouse Middle"`, `"Mouse 4"`, `"Mouse 5"`, `"Wheel"` (either way), `"Wheel Up"`, `"Wheel Down"`. |
+| `controls.<action>` | (the table in "Controls") | `HALO_KEY_<ACTION>` | The keys and mouse buttons of an action, up to two, separated by a comma: `move_forward`, `move_backward`, `strafe_left`, `strafe_right`, `jump`, `crouch`, `fire`, `throw_grenade`, `melee`, `reload`, `zoom`, `switch_weapon`, `switch_grenade`, `action`, `flashlight`, `scoreboard`, `pause`, `screenshot`, `push_to_talk`, `kevin_mic`. Keys by their names (`"W"`, `"Space"`, `"Left Ctrl"`, `"F1"`), and `"Mouse Left"`, `"Mouse Right"`, `"Mouse Middle"`, `"Mouse 4"`, `"Mouse 5"`, `"Wheel"` (either way), `"Wheel Up"`, `"Wheel Down"`. |
 | `game.console_log` | `"important"` | `HALO_CONSOLE_LOG` | What the console shows on the screen. `"important"`: bans, players that the host drops for cheating, the reasons that the game refuses a command, and the asserts that stop the game. `"all"`: all the lines. `"none"`: only the asserts that stop the game. The output of a command always shows. `debug.txt` gets all the lines. |
 | `game.language` | `""` | `HALO_LANGUAGE` | The language of the menus: `ja`, `de`, `fr`, `es` or `it`. Empty: English. |
 | `game.enhanced_animations` | `true` | `HALO_ENHANCED_ANIMATIONS` | `true`: the player bipeds' grenade throws keep their legs moving, blended by speed and direction (crouched throws stay crouched, throws in the air use the jump's legs), Warthog and Scorpion riders stay seated to throw and let go of the grips to throw and reload, and a player turns with the aim while throwing, as while meleeing. `false`: the original animations, which freeze the legs during a throw and stand a rider up. Only in config.toml, not in the menus. |

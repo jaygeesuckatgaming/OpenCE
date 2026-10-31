@@ -1049,6 +1049,32 @@ void compute_sound_obstruction(
 	return;
 }
 
+/* port: what's between a point and a local player's camera, as a sound there
+would be muffled by it (compute_sound_obstruction): for the voice of Kevin,
+the campaign's teammate (port/linux/game/companion.c) */
+void game_sound_port_obstruction(
+	short local_player_index,
+	real_point3d const *position,
+	struct location const *game_location,
+	real *obstruction,
+	real *occlusion)
+{
+	struct sound_source source;
+
+	csmemset(&source, 0, sizeof(source));
+	source.spatialization_mode = _sound_spatialization_mode_absolute;
+	source.scale = 1.f;
+	source.gain = 1.f;
+	source.location.position = *position;
+	source.location.game_location = *game_location;
+	compute_sound_obstruction(
+		local_player_index,
+		&source,
+		distance3d(&observer_get_camera(local_player_index)->position, position));
+	*obstruction = source.obstruction;
+	*occlusion = source.occlusion;
+}
+
 /* ---------- private code */
 
 static void compute_combined_pas(

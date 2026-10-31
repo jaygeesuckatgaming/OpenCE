@@ -26,6 +26,7 @@ Conventions carried over from the Xbox:
 #include "halo_ui_pointer.h"
 #include "port_config.h"
 #include "main/console.h"
+#include "../game/companion.h"
 
 #include <SDL3/SDL.h>
 
@@ -5805,6 +5806,61 @@ static void write_screenshot(struct render_target_entry *target)
 	free(pixels);
 }
 
+/* the player's view mate asked for, Kevin's eyes (companion.c): the frame, at
+most 1024 wide (each pixel the average of a square of the frame's), as RGB
+rows from the top */
+static void write_companion_view(struct render_target_entry *target)
+{
+	unsigned long width = target->target.gl_width, height = target->target.gl_height;
+	unsigned long step = (width + 1023) / 1024;
+	unsigned long out_width, out_height, x, y, dx, dy;
+	unsigned char *pixels, *rgb;
+
+	if (!width || !height)
+		return;
+	out_width = width / step;
+	out_height = height / step;
+	pixels = malloc(width * height * 4);
+	rgb = malloc(out_width * out_height * 3);
+	if (pixels && rgb)
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer_get(target->target.texture, 0));
+		glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+		for (y = 0; y < out_height; y++)
+		{
+			for (x = 0; x < out_width; x++)
+			{
+				unsigned long sum[3] = { 0, 0, 0 };
+				unsigned char *out = rgb + (y * out_width + x) * 3;
+
+				for (dy = 0; dy < step; dy++)
+				{
+					unsigned char const *in = pixels + ((y * step + dy) * width + x * step) * 4;
+
+					for (dx = 0; dx < step; dx++, in += 4)
+					{
+#ifdef HALO_GLES
+						sum[0] += in[0];
+						sum[1] += in[1];
+						sum[2] += in[2];
+#else
+						sum[0] += in[2];
+						sum[1] += in[1];
+						sum[2] += in[0];
+#endif
+					}
+				}
+				out[0] = (unsigned char)(sum[0] / (step * step));
+				out[1] = (unsigned char)(sum[1] / (step * step));
+				out[2] = (unsigned char)(sum[2] / (step * step));
+			}
+		}
+		companion_view_taken(rgb, out_width, out_height);
+	}
+	free(pixels);
+	free(rgb);
+}
+
 #ifndef HALO_GLES
 /* the GPU copies the counts of the previous frame's tests into their slots
 (given by name: Mesa's GL thread waits for everything before a
@@ -5860,6 +5916,8 @@ void WINAPI D3DDevice_Present(CONST RECT *source_rectangle, CONST RECT *destinat
 		if (platform_screenshot_take_request())
 			write_key_screenshot(back_buffer);
 #endif
+		if (companion_view_wanted())
+			write_companion_view(back_buffer);
 
 		platform_video_drawable_size(&window_width, &window_height);
 		/* letterbox to the back buffer's aspect ratio */

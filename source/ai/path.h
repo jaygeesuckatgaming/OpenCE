@@ -465,6 +465,7 @@ extern long debug_obstacle_path_goal_surface_index;
 extern real debug_obstacle_path_radius;
 extern boolean debug_obstacle_path_finishing;
 extern boolean debug_ignore_broken_surfaces;
+extern real path_obstacle_search_reach; /* port: path_obstacle_avoidance.c */
 
 /* ---------- public code */
 

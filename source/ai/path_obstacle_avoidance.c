@@ -232,6 +232,12 @@ boolean debug_obstacle_path_on_failure= FALSE;
 
 boolean debug_obstacle_path= FALSE;
 
+/* port: how far along a stretch of a path objects in the way are looked for,
+at most (0: within 4 of its start, as the game's actors do; the companion's
+paths, port/linux/game/companion.c, look along the whole stretch, so that a
+boulder wider than 4 isn't gone round one way, then the other) */
+real path_obstacle_search_reach= 0.f;
+
 
 /* ---------- public code */
 
@@ -952,7 +958,9 @@ boolean path_avoid_obstacles(
 		if (compute_obstacles)
 		{
 			obstacles_new(obstacles);
-			obstacles_get_discs_in_sphere(obstacles, start_point, 4.f, &movement_direction,
+			obstacles_get_discs_in_sphere(obstacles, start_point,
+				MAX(4.f, MIN(path_obstacle_search_reach, distance3d(start_point, goal_point))), /* port: was 4 */
+				&movement_direction,
 				state->input.ignore_source_object_index, state->input.ignore_target_object_index);
 			if (state->input.attractor_valid)
 			{

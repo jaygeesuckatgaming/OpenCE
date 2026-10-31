@@ -421,7 +421,7 @@ static const char *const binding_settings[NUMBER_OF_HALO_KEYBOARD_ACTIONS] =
 	"controls.jump", "controls.crouch", "controls.fire", "controls.throw_grenade", "controls.melee",
 	"controls.reload", "controls.zoom", "controls.switch_weapon", "controls.switch_grenade", "controls.action",
 	"controls.flashlight", "controls.scoreboard", "controls.pause", "controls.screenshot",
-	"controls.push_to_talk",
+	"controls.push_to_talk", "controls.kevin_mic",
 };
 
 static const struct
@@ -594,7 +594,8 @@ unsigned long halo_keyboard_actions(short controller_index)
 	return controller_index == 0 ? keyboard_actions_held : 0;
 }
 
-int halo_push_to_talk_held(void)
+/* whether a key of the action is held, however the game reads its own */
+static int action_held(int action)
 {
 	struct platform_input_state input;
 	int slot;
@@ -604,10 +605,20 @@ int halo_push_to_talk_held(void)
 	platform_input_read(&input, FALSE);
 	for (slot = 0; slot < MAXIMUM_BINDINGS; slot++)
 	{
-		if (input_held(&input, bindings[HALO_KEYBOARD_PUSH_TO_TALK][slot]))
+		if (input_held(&input, bindings[action][slot]))
 			return 1;
 	}
 	return 0;
+}
+
+int halo_push_to_talk_held(void)
+{
+	return action_held(HALO_KEYBOARD_PUSH_TO_TALK);
+}
+
+int halo_kevin_mic_held(void)
+{
+	return action_held(HALO_KEYBOARD_KEVIN_MIC);
 }
 
 /* A scroll of the wheel switches weapons once: it holds Y for WHEEL_PRESS_MS
