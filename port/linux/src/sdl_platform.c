@@ -432,6 +432,14 @@ static void platform_window_size_setting(long *width, long *height)
 	}
 }
 
+/* display.window_title, so the two co-op instances can be told apart */
+static const char *platform_window_title(void)
+{
+	const char *title = config_string("display.window_title");
+
+	return title && title[0] ? title : "Halo";
+}
+
 /* a display's own size in pixels (its desktop mode) */
 static BOOL platform_display_size(SDL_DisplayID display, long *width, long *height)
 {
@@ -814,7 +822,7 @@ BOOL platform_video_initialize(unsigned long width, unsigned long height)
 	(void)width;
 	(void)height;
 	platform_window_size_setting(&platform_window_width, &platform_window_height);
-	platform_window = SDL_CreateWindow("Halo", (int)platform_window_width, (int)platform_window_height,
+	platform_window = SDL_CreateWindow(platform_window_title(), (int)platform_window_width, (int)platform_window_height,
 		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
 		(config_boolean("debug.hidden_window") ? SDL_WINDOW_HIDDEN : 0) |
 		(platform_fullscreen_setting() ? SDL_WINDOW_FULLSCREEN : 0));

@@ -98,6 +98,9 @@ static const struct config_setting config_settings[] =
 	{ "display.window_size", _config_string, "\"\"", "HALO_WINDOW_SIZE", _environment_value, _platform_desktop,
 		"The window's size, \"<width>x<height>\" (\"1920x1080\"), 640x480 or more (it\n"
 		"can be resized). Empty: display.window_scale's." },
+	{ "display.window_title", _config_string, "\"Halo\"", "HALO_WINDOW_TITLE", _environment_value, _platform_desktop,
+		"The game window's title. The co-op instances set \"Halo - Human\" and\n"
+		"\"Halo - Gem\" so the two windows are distinguishable." },
 	{ "display.window_scale", _config_integer, "2", "HALO_WINDOW_SCALE", _environment_value, _platform_desktop,
 		"Where display.window_size is empty: the window's size as a multiple of\n"
 		"640x480." },
