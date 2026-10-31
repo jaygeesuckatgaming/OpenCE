@@ -1819,6 +1819,12 @@ boolean network_game_server_start_network_game(
 			boolean told = TRUE;
 			long machine_index;
 
+			/* port: set before the start goes out: the host's own client, on
+			loopback, can load and answer within this tick, and an answer
+			before the flag was set was ignored, leaving the host waiting for
+			the machine it had itself answered for. */
+			server->sent_start_game_message = TRUE;
+
 			/* port: a machine still downloading the map is not told to load
 			with the others. It joins once the download is done
 			(network_game_server_release_map_fetchers). */

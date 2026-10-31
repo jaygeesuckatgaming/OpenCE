@@ -1319,8 +1319,11 @@ long find_best_starting_location_index(
 	/* port: a multiplayer map played alone (New Game's MULTIPLAYER maps:
 	no game engine) has no starting location for no game type, every one
 	being for its game types: the player starts at any of them, not at none
-	(outside the map, with no pause menu) */
-	if (best_starting_location_index == NONE && !game_engine_running() && starting_location_count > 0)
+	(outside the map, with no pause menu). A network client can rate every
+	point 0 too: it starts at one rather than waiting forever for space to
+	clear. */
+	if (best_starting_location_index == NONE && starting_location_count > 0 &&
+		(!game_engine_running() || game_connection() == _game_connection_network_client))
 	{
 		best_starting_location_index = (short)PIN(
 			(short)(real_random_range(0.0f, 1.0f) * starting_location_count), 0, starting_location_count - 1);

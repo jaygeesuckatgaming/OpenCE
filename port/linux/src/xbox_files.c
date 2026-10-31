@@ -210,6 +210,14 @@ void platform_translate_path(const char *xbox_path, char *host_path, unsigned lo
 	const char *cursor = xbox_path;
 	unsigned long length;
 
+	/* a literal host path, for files outside the Xbox tree (the AI player's
+	   state and goal files): file://<host path> is used exactly as written */
+	if (strncmp(cursor, "file://", 7) == 0)
+	{
+		snprintf(host_path, host_path_size, "%s", cursor + 7);
+		return;
+	}
+
 	snprintf(resolved, sizeof(resolved), "%s", platform_data_root());
 	if (((cursor[0] >= 'a' && cursor[0] <= 'z') || (cursor[0] >= 'A' && cursor[0] <= 'Z')) && cursor[1] == ':')
 	{

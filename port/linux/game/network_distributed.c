@@ -883,7 +883,11 @@ static void distributed_batch_flush(
 	if (sender == HOST_SENDER)
 		network_distributed_client_send(batch->data, batch->size);
 	else
-		network_distributed_server_send_to_machine(sender, batch->data, batch->size);
+		/* port: reliably, not over the fixed client datagram port: two
+		instances on one machine (the host's own client and a client) both
+		bind 5151, and the host's datagrams to the second were lost to the
+		first, which the reliable stream does not share. */
+		network_distributed_server_send_to_machine_reliably(sender, batch->data, batch->size);
 	batch->size = 0;
 }
 
