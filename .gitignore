@@ -28,5 +28,9 @@ assets/
 !port/assets/
 original/
 
+# Disc images (never commit)
+*.iso
+*.xiso
+
 # CI build outputs (tools/ci_build.py)
 dist/
