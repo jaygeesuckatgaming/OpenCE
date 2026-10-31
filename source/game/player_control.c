@@ -185,6 +185,7 @@ symbols in this file:
 #include "game/game.h"
 #undef limit2d
 #include "game/player_control_runtime.h"
+#include "ai_player.h"
 #include "players.h"
 #include "player_queues_new.h"
 
@@ -640,6 +641,19 @@ static void handle_one_player_input(
 		local_player_index,
 		time_delta_sec,
 		&input);
+	{
+		struct ai_player_input ai_input;
+
+		/* the Gem AI co-op player (AI instance only) */
+		if (ai_player_get_input(local_player_index, &ai_input))
+		{
+			input.throttle.i = ai_input.throttle_i;
+			input.throttle.j = ai_input.throttle_j;
+			input.facing_delta.yaw = ai_input.facing_delta_yaw;
+			input.facing_delta.pitch = ai_input.facing_delta_pitch;
+			input.primary_trigger = ai_input.primary_trigger;
+		}
+	}
 	if (local_player_get_player_index(local_player_index) != NONE)
 	{
 		match_assert_valid_real(
