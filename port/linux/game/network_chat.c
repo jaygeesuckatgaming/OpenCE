@@ -323,6 +323,11 @@ static struct
 /* the keyboard's chat actions held last frame (a press starts a line) */
 static unsigned long chat_actions_held;
 
+/* the chasm bridge's line to an NPC (chasm_bridge.c): its own mode, so it
+runs and draws in a single-player campaign, and where its text goes */
+static boolean chat_bridge_mode;
+static void (*chat_bridge_handler)(const char *text);
+
 /* the on-screen keyboard, for a controller (D-pad Up opens it) and the
 touchscreen (its keys tapped) */
 static struct
@@ -1824,6 +1829,7 @@ static void chat_input_end(
 	void)
 {
 	chat_input.active = FALSE;
+	chat_bridge_mode = FALSE;
 	chat_keyboard.open = FALSE;
 	chat_keyboard.opening_buttons = 0;
 	chat_keyboard.drawn = FALSE;
@@ -2065,8 +2071,8 @@ void network_chat_update(
 		vote_keys_held = vote_keys;
 		vote_pad_held = vote_pad;
 	}
-	if (!chat_network_game() || !game_in_progress() || chat_speaker(TRUE) == NONE || !chat_shown() || chat_hidden() ||
-		(chat_input.active && chat_input.physical && !controller_remap_connected(chat_input.controller)))
+	if (!chat_bridge_mode && (!chat_network_game() || !game_in_progress() || chat_speaker(TRUE) == NONE || !chat_shown() || chat_hidden() ||
+		(chat_input.active && chat_input.physical && !controller_remap_connected(chat_input.controller))))
 	{
 		chat_input_end();
 		chat_actions_held = 0;
@@ -2128,8 +2134,17 @@ void network_chat_update(
 			break;
 		case _key_return:
 		case _keypad_enter:
-			chat_send(chat_input.channel, chat_input.text, TRUE, TRUE);
-			chat_input_end();
+			if (chat_bridge_mode)
+			{
+				if (chat_bridge_handler)
+					chat_bridge_handler(chat_input.text);
+				chat_input_end();
+			}
+			else
+			{
+				chat_send(chat_input.channel, chat_input.text, TRUE, TRUE);
+				chat_input_end();
+			}
 			break;
 		/* (to everyone, the team, the vehicle, in turn) */
 		case _key_tab:
@@ -2183,6 +2198,28 @@ boolean network_chat_typing(
 	void)
 {
 	return chat_input.active;
+}
+
+/* the chasm bridge's line (chasm_bridge.c) */
+void network_chat_bridge_begin(
+	void)
+{
+	chat_input_begin(_chat_channel_everyone, NONE, FALSE);
+	chat_bridge_mode = chat_input.active;
+	return;
+}
+
+void network_chat_bridge_set_handler(
+	void (*handler)(const char *text))
+{
+	chat_bridge_handler = handler;
+	return;
+}
+
+boolean network_chat_bridge_active(
+	void)
+{
+	return chat_input.active && chat_bridge_mode;
 }
 
 /* ---------- drawing */
@@ -2666,8 +2703,12 @@ void network_chat_draw(
 	/* the point the lines are scaled about */
 	short anchor;
 
-	if (!chat_network_game() || !chat_shown() || chat_hidden() || font_index == NONE || local_player_index < 0 ||
-		local_player_index >= MAXIMUM_LOCAL_PLAYERS || (!chat_line_count && !typing))
+	if (font_index == NONE || local_player_index < 0 || local_player_index >= MAXIMUM_LOCAL_PLAYERS ||
+		(!chat_line_count && !typing))
+	{
+		return;
+	}
+	if (!chat_bridge_mode && (!chat_network_game() || !chat_shown() || chat_hidden()))
 	{
 		return;
 	}
@@ -2719,7 +2760,8 @@ void network_chat_draw(
 		real_argb_color color;
 		struct chat_layout layout;
 		wchar_t text[CHAT_TEXT_SIZE + 2];
-		wchar_t const *prompt = chat_input.channel == _chat_channel_team ? L"Say to team:" :
+		wchar_t const *prompt = chat_bridge_mode ? L"Say to NPC:" :
+			chat_input.channel == _chat_channel_team ? L"Say to team:" :
 			chat_input.channel == _chat_channel_vehicle ? L"Say to vehicle:" : L"Say:";
 		short length;
 		short start = 0;

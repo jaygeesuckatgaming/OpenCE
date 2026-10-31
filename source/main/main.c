@@ -386,6 +386,7 @@ symbols in this file:
 #include "network_aim_assist.h" /* port: port/linux/game/network_aim_assist.c */
 #include "network_shield_effects.h" /* port: port/linux/game/network_shield_effects.c */
 #include "map_share.h" /* port: port/linux/game/map_share.c */
+#include "chasm_bridge.h" /* port: port/linux/game/chasm_bridge.c */
 #include "profile_sections.h" /* port: port/linux/include/profile_sections.h */
 #ifdef HALO_PROFILE
 #include "profile_trace.h" /* port: port/linux/src/profile_trace.c */
@@ -3596,6 +3597,8 @@ static boolean main_loop_iteration(
 			map_share_update();
 			/* port: network games' text chat (port/linux/game/network_chat.c) */
 			network_chat_update();
+			/* port: the chasm AI bridge (port/linux/game/chasm_bridge.c) */
+			chasm_bridge_update();
 			profile_scope_enter(main_network_start_frame_section)
 			connection = main_globals.connection;
 			if (connection==_game_connection_network_client)

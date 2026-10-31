@@ -44,6 +44,11 @@ void network_chat_say_unchecked(short channel, char const *text);
 /* whether a line is being typed: the keyboard types into it, and drives no
 player (xinput_sdl.c), as with the console */
 boolean network_chat_typing(void);
+/* the chasm bridge's line to an NPC (chasm_bridge.c): its own input line,
+drawn in a single-player campaign too; the handler gets the text on Enter */
+void network_chat_bridge_begin(void);
+void network_chat_bridge_set_handler(void (*handler)(const char *text));
+boolean network_chat_bridge_active(void);
 /* Physical controller owning the on-screen keyboard, or NONE. */
 short network_chat_controller(void);
 /* (hud_unit.c) where the local player's motion sensor was drawn: its left

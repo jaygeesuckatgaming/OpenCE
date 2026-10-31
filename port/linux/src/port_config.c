@@ -367,6 +367,23 @@ static const struct config_setting config_settings[] =
 		"The microphone voice chat listens to: a device's name as Settings >\n"
 		"Audio lists it, or \"default\" for the system's (also if it is not found)." },
 
+	{ "bridge.enabled", _config_boolean, "false", "HALO_BRIDGE", _environment_set_is_true, _platform_desktop,
+		"Connect campaign NPCs to a local chasm AI backend at bridge.api_url.\n"
+		"Off by default; single-player campaign only." },
+	{ "bridge.api_url", _config_string, "\"http://127.0.0.1:7341\"", "HALO_BRIDGE_URL", _environment_value, _platform_desktop,
+		"The chasm backend's address (the desktop app listens on this machine\n"
+		"at http://127.0.0.1:7341)." },
+	{ "bridge.talk_radius", _config_real, "6.0", "HALO_BRIDGE_RADIUS", _environment_value, _platform_desktop,
+		"How near, in metres, an NPC must be to talk to it." },
+	{ "bridge.debug_line", _config_string, "\"Hello. Who are you?\"", "HALO_BRIDGE_LINE", _environment_value, _platform_desktop,
+		"The line the talk key sends until the in-game text input lands." },
+	{ "bridge.tts_url", _config_string, "\"http://127.0.0.1:13300/tts\"", "HALO_BRIDGE_TTS_URL", _environment_value, _platform_desktop,
+		"The StyleTTS2 /tts server that voices NPC replies (the JSON {\"text\":...}\n"
+		"shape). Empty disables voice and leaves subtitles only." },
+	{ "bridge.stt_url", _config_string, "\"http://127.0.0.1:13310/transcribe\"", "HALO_BRIDGE_STT_URL", _environment_value, _platform_desktop,
+		"The local Whisper /transcribe server (raw 48 kHz mono WAV body ->\n"
+		"{\"text\":...}). Hold controls.push_to_talk (V) to record a line." },
+
 	{ "input.touch_controls", _config_string, "\"auto\"", "HALO_TOUCH_CONTROLS", _environment_value, _platform_android | _platform_web,
 		"The on-screen touch controls in a game: \"auto\" shows them on a\n"
 		"touchscreen while no controller is connected, \"on\" also with a\n"

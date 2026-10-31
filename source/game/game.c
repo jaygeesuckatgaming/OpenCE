@@ -120,6 +120,7 @@ struct game_options;
 
 #include "cseries/cseries.h"
 #include "game/game.h"
+#include "chasm_bridge.h" /* port: port/linux/game/chasm_bridge.c */
 #include "game_modes.h" /* port: port/linux/game/game_modes.c */
 #include "ai/ai.h"
 #include "bink/bink_playback.h"
@@ -713,6 +714,7 @@ void game_initialize_for_new_map(
 	from now on go elsewhere, port/linux/game/network_objects.c) */
 	network_objects_placed();
 	ui_widgets_safe_to_load(TRUE);
+	chasm_bridge_initialize_for_new_map();
 
 	return;
 }
@@ -911,6 +913,7 @@ void game_precache_new_map(
 void game_dispose_from_old_map(
 	void)
 {
+	chasm_bridge_dispose_from_old_map();
 	rasterizer_dispose_from_old_map();
 	game_state_dispose_from_old_map();
 	cheats_dispose_from_old_map();
