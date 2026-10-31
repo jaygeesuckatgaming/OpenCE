@@ -91,6 +91,7 @@ client of another machine's game.
 void platform_log(char const *format, ...);
 /* port_config.c's */
 double config_real(const char *name);
+int config_boolean(const char *name);
 /* dsound_sdl.c's: Xbox ADPCM to 16-bit samples, freed there (its malloc is the
 C library's, not the game's) */
 short *dsound_decode_xbox_adpcm(const unsigned char *source, unsigned long size, unsigned long channels,
@@ -2835,6 +2836,11 @@ void companion_update(
 {
 	long player_unit_index;
 	struct unit_datum *player_unit;
+
+	/* the co-op AI-player build turns Kevin off; the m8 single-player build
+	   keeps him on */
+	if (!config_boolean("companion.enabled"))
+		return;
 
 	mate_link_start();
 	if (game_engine_running() || network_game_distributed_client())

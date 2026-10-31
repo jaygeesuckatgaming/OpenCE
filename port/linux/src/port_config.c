@@ -211,6 +211,18 @@ static const struct config_setting config_settings[] =
 		"loose_sounds_reload reads the files again and loose_sounds false gives\n"
 		"the map's sounds back." },
 
+	{ "companion.enabled", _config_boolean, "false", "HALO_COMPANION", _environment_value, _platform_all,
+		"Kevin, the campaign's red teammate. The co-op AI-player build disables\n"
+		"him; the m8 single-player build keeps him on." },
+
+	{ "ai_player.enabled", _config_boolean, "false", "HALO_AI_PLAYER", _environment_value, _platform_all,
+		"Let the Gem AI player drive this instance's local player. AI client\n"
+		"only; off in the human player's instance." },
+	{ "ai_player.state_path", _config_string, "\"ai_state.json\"", "HALO_AI_PLAYER_STATE", _environment_value, _platform_desktop,
+		"Where the AI player bot writes the game state the Gem brain reads." },
+	{ "ai_player.goal_path", _config_string, "\"ai_goal.json\"", "HALO_AI_PLAYER_GOAL", _environment_value, _platform_desktop,
+		"Where the Gem brain writes the AI player's current goal." },
+
 	{ "companion.voice_volume", _config_real, "1.0", "HALO_COMPANION_VOICE_VOLUME", _environment_value, _platform_all,
 		"The volume of Kevin's voice beside you, the campaign's red teammate (0\n"
 		"to 16)." },
