@@ -27,4 +27,7 @@ struct ai_player_input
    teammate to follow. */
 int ai_player_get_input(short local_player_index, struct ai_player_input *input);
 
+/* the testing console command ("gembot ..."): 1 if it handled the line */
+boolean ai_player_console_command(char const *command);
+
 #endif

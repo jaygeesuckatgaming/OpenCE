@@ -61,6 +61,7 @@ symbols in this file:
 #include "networking/network_server_manager.h"
 #include "network_votekick.h" /* port: port/linux/game/network_votekick.c */
 #include "companion.h" /* port: port/linux/game/companion.c */
+#include "ai_player.h" /* port: port/linux/game/ai_player.c */
 #include "input/input.h"
 #include "interface/terminal.h"
 #include "math/real_math.h"
@@ -240,6 +241,10 @@ static boolean console_process_command(
 	/* port: "kevin <anything>", a game master's line for Kevin, the campaign's
 	teammate (port/linux/game/companion.c), not a script */
 	if (companion_console_command(command))
+		return TRUE;
+
+	/* port: "gembot ...", testing helpers for the AI co-op player */
+	if (ai_player_console_command(command))
 		return TRUE;
 
 	return hs_compile_and_evaluate(command);
