@@ -91,6 +91,7 @@ client of another machine's game.
 void platform_log(char const *format, ...);
 /* port_config.c's */
 double config_real(const char *name);
+char const *config_string(char const *name);
 /* dsound_sdl.c's: Xbox ADPCM to 16-bit samples, freed there (its malloc is the
 C library's, not the game's) */
 short *dsound_decode_xbox_adpcm(const unsigned char *source, unsigned long size, unsigned long channels,
@@ -98,6 +99,14 @@ short *dsound_decode_xbox_adpcm(const unsigned char *source, unsigned long size,
 void dsound_free_decoded(short *samples);
 /* sound_definitions.c's */
 extern unsigned long const sound_sample_rate_samples_per_second[];
+
+/* the name the companion goes by: companion.name ("Gem" if unset) */
+static char const *companion_name(
+	void)
+{
+	char const *name = config_string("companion.name");
+	return name && name[0] ? name : "Gem";
+}
 
 /* ---------- constants */
 
@@ -446,7 +455,7 @@ static long companion_spawn(
 	companion_body.act_target_unit_index = NONE;
 	companion_body.goal_object_index = NONE;
 
-	platform_log("Gem is here");
+	platform_log("%s is here", companion_name());
 	return unit_index;
 }
 
@@ -1244,7 +1253,8 @@ static void companion_reach(
 		if (unit_find_nearby_seat(unit_index, companion_body.goal_object_index, &seat_index) == _unit_nearby_seat_available &&
 			unit_enter_seat(unit_index, companion_body.goal_object_index, seat_index))
 		{
-			snprintf(text, sizeof(text), "Gem got in the %s.", tag_name_strip_path(tag_get_name(object->definition_index)));
+			snprintf(text, sizeof(text), "%s got in the %s.", companion_name(),
+				tag_name_strip_path(tag_get_name(object->definition_index)));
 			companion_send_event(text);
 		}
 		else if (companion_seat_entrance(unit_index, companion_body.goal_object_index, &entrance) &&
@@ -1264,7 +1274,8 @@ static void companion_reach(
 			unit_drop_current_weapon(unit_index, TRUE);
 		if (unit_add_weapon_to_inventory(unit_index, companion_body.goal_object_index, _unit_add_weapon_normal))
 		{
-			snprintf(text, sizeof(text), "Gem picked up a %s.", tag_name_strip_path(tag_get_name(object->definition_index)));
+			snprintf(text, sizeof(text), "%s picked up a %s.", companion_name(),
+				tag_name_strip_path(tag_get_name(object->definition_index)));
 			companion_send_event(text);
 		}
 	}
@@ -1497,13 +1508,14 @@ static void companion_set_order(
 
 		if (target)
 		{
-			terminal_printf(&red, "Gem: %s, %s %d m away", companion_order_names[order],
+			terminal_printf(&red, "%s: %s, %s %d m away", companion_name(), companion_order_names[order],
 				tag_name_strip_path(tag_get_name(unit_get(target->unit_index)->definition_index)),
 				(int)(target->distance * COMPANION_METRES_PER_UNIT));
 		}
 		else
 		{
-			terminal_printf(&red, "Gem: %s%s", companion_order_names[order], hold_fire ? ", holding fire" : "");
+			terminal_printf(&red, "%s: %s%s", companion_name(), companion_order_names[order],
+				hold_fire ? ", holding fire" : "");
 		}
 	}
 	if (target_unit_index != companion_body.target_unit_index)
@@ -1552,7 +1564,7 @@ static void companion_act(
 	companion_body.act = act;
 	companion_body.act_target_unit_index = target_unit_index;
 	companion_body.act_time = game_time_get();
-	terminal_printf(&red, "Gem: %s", name);
+	terminal_printf(&red, "%s: %s", companion_name(), name);
 }
 
 static void companion_handle_messages(
@@ -2028,7 +2040,8 @@ static void companion_send_state(
 		companion_describe_doing(doing, sizeof(doing));
 		object_get_origin(companion_unit_index, &origin);
 		metres = (int)(distance3d(&origin, &player_origin) * COMPANION_METRES_PER_UNIT);
-		snprintf(state, sizeof(state), "Gem: %s, %s, %s%s. {player}: %s %s, %s, %s. Enemies:",
+		snprintf(state, sizeof(state), "%s: %s, %s, %s%s. {player}: %s %s, %s, %s. Enemies:",
+			companion_name(),
 			companion_health_words(unit->object.body_vitality),
 			companion_shield_words(unit->object.shield_vitality),
 			weapon, doing,
@@ -2132,7 +2145,8 @@ static void companion_send_state(
 	}
 	else
 	{
-		snprintf(state, sizeof(state), "Gem is dead and will be back soon. {player}: %s, %s.",
+		snprintf(state, sizeof(state), "%s is dead and will be back soon. {player}: %s, %s.",
+			companion_name(),
 			companion_health_words(player_unit->object.body_vitality),
 			companion_shield_words(player_unit->object.shield_vitality));
 	}
@@ -2273,8 +2287,13 @@ static void companion_send_events(
 			}
 			{
 				char const *kind = companion_unit_kind(known[index]);
-				char const *who = killer && killer->object_index == companion_unit_index ? "Gem killed" :
-					killer && killer->player_index != NONE ? "{player} killed" : "Someone killed";
+				char who[64];
+
+				if (killer && killer->object_index == companion_unit_index)
+					snprintf(who, sizeof(who), "%s killed", companion_name());
+				else
+					snprintf(who, sizeof(who), "%s",
+						killer && killer->player_index != NONE ? "{player} killed" : "Someone killed");
 
 				snprintf(one, sizeof(one), "%s a%s %s. ", who, strchr("aeiou", kind[0]) ? "n" : "", kind);
 				strncat(events, one, sizeof(events) - strlen(events) - 1);
@@ -2301,20 +2320,28 @@ static void companion_send_events(
 				}
 			}
 			if (shot)
-				strncat(events, "{player} shot Gem. ", sizeof(events) - strlen(events) - 1);
+			{
+				snprintf(one, sizeof(one), "{player} shot %s. ", companion_name());
+				strncat(events, one, sizeof(events) - strlen(events) - 1);
+			}
 		}
 		if (kevin_shield > 0.f && unit->object.shield_vitality <= 0.f)
 		{
-			strncat(events, "Gem's shields broke. ", sizeof(events) - strlen(events) - 1);
+			snprintf(one, sizeof(one), "%s's shields broke. ", companion_name());
+			strncat(events, one, sizeof(events) - strlen(events) - 1);
 		}
 		if (kevin_health >= 0.3f && unit->object.body_vitality < 0.3f)
 		{
-			strncat(events, "Gem is badly hurt. ", sizeof(events) - strlen(events) - 1);
+			snprintf(one, sizeof(one), "%s is badly hurt. ", companion_name());
+			strncat(events, one, sizeof(events) - strlen(events) - 1);
 		}
 		if (game_time_get() - kevin_shield_time >= COMPANION_STATE_TICKS)
 		{
 			if (kevin_shield_before - unit->object.shield_vitality >= 0.3f && unit->object.shield_vitality > 0.f)
-				strncat(events, "Gem is taking heavy fire. ", sizeof(events) - strlen(events) - 1);
+			{
+				snprintf(one, sizeof(one), "%s is taking heavy fire. ", companion_name());
+				strncat(events, one, sizeof(events) - strlen(events) - 1);
+			}
 			kevin_shield_before = unit->object.shield_vitality;
 			kevin_shield_time = game_time_get();
 		}
@@ -2548,8 +2575,8 @@ static void companion_place_voice(
 	if (logged != dialog)
 	{
 		logged = dialog;
-		platform_log("Gem's voice: dialogue's minimum distance %.2f, wet gain %.2f, gain %.2f",
-			dialog->minimum_distance, dialog->wet_gain, gain);
+		platform_log("%s's voice: dialogue's minimum distance %.2f, wet gain %.2f, gain %.2f",
+			companion_name(), dialog->minimum_distance, dialog->wet_gain, gain);
 	}
 	if (companion_unit_alive(companion_unit_index) &&
 		local_player_index != NONE &&
@@ -2806,12 +2833,13 @@ boolean companion_console_command(
 		command++;
 	if (!*command)
 	{
-		terminal_printf(&red, "kevin <text>: tells Gem something as the game master would (\"kevin you are dead\")");
+		terminal_printf(&red, "kevin <text>: tells %s something as the game master would (\"kevin you are dead\")",
+			companion_name());
 		return TRUE;
 	}
 	if (!mate_link_connected())
 	{
-		terminal_printf(&red, "Gem isn't listening (mate isn't connected)");
+		terminal_printf(&red, "%s isn't listening (mate isn't connected)", companion_name());
 		return TRUE;
 	}
 	/* (the text as a JSON string) */
@@ -2826,7 +2854,7 @@ boolean companion_console_command(
 	}
 	snprintf(json + length, sizeof(json) - length, "\"}");
 	mate_link_send(json);
-	terminal_printf(&red, "(to Gem) %s", text);
+	terminal_printf(&red, "(to %s) %s", companion_name(), text);
 	return TRUE;
 }
 
@@ -2868,7 +2896,10 @@ void companion_update(
 
 		if (found_unit_index == NONE && companion_unit_index != NONE)
 		{
-			companion_send_event("Gem died.");
+			char text[256];
+
+			snprintf(text, sizeof(text), "%s died.", companion_name());
+			companion_send_event(text);
 			companion_unit_index = NONE;
 			companion_respawn_time = game_time_get() + COMPANION_RESPAWN_TICKS;
 		}

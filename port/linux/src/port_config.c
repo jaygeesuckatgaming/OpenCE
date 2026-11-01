@@ -211,17 +211,21 @@ static const struct config_setting config_settings[] =
 		"loose_sounds_reload reads the files again and loose_sounds false gives\n"
 		"the map's sounds back." },
 
+	{ "companion.name", _config_string, "\"Gem\"", "HALO_COMPANION_NAME", _environment_value, _platform_all,
+		"What the companion is called: its state, events and the console say it.\n"
+		"Its persona and voice are mate's (m8.toml's [mate] name); keep the two\n"
+		"the same." },
 	{ "companion.voice_volume", _config_real, "1.0", "HALO_COMPANION_VOICE_VOLUME", _environment_value, _platform_all,
-		"The volume of Kevin's voice beside you, the campaign's red teammate (0\n"
-		"to 16)." },
+		"The volume of the companion's voice beside you, the campaign's red\n"
+		"teammate (0 to 16)." },
 	{ "companion.radio_volume", _config_real, "1.0", "HALO_COMPANION_RADIO_VOLUME", _environment_value, _platform_all,
-		"The volume of Kevin's voice over the radio (0 to 16)." },
+		"The volume of the companion's voice over the radio (0 to 16)." },
 	{ "companion.radio_distance", _config_real, "25.0", "HALO_COMPANION_RADIO_DISTANCE", _environment_value, _platform_all,
-		"How far off, in metres, Kevin talks over the radio (and whenever he is\n"
-		"out of sight)." },
+		"How far off, in metres, the companion talks over the radio (and\n"
+		"whenever it is out of sight)." },
 	{ "companion.speech_cooldown", _config_real, "5.0", "HALO_COMPANION_SPEECH_COOLDOWN", _environment_value, _platform_all,
-		"Seconds after Kevin's voice stops before what happens in the game can\n"
-		"have him talk again (talking to him, he answers at once)." },
+		"Seconds after the companion's voice stops before what happens in the\n"
+		"game can have it talk again (talking to it, it answers at once)." },
 
 	{ "input.touch_controls", _config_string, "\"auto\"", "HALO_TOUCH_CONTROLS", _environment_value, _platform_android | _platform_web,
 		"The on-screen touch controls in a game: \"auto\" shows them on a\n"
