@@ -1,16 +1,16 @@
 /*
 COMPANION.C
 
-Kevin: a teammate in the campaign, a Spartan in red armour. He is the
+Gem: a teammate in the campaign, a Spartan in red armour. He is the
 player's own biped, painted red as a network co-op player is
 (players_coop_color_unit), carrying copies of the player's weapons. He has
 no actor: nothing of the game's AI decides for him.
 
 His decisions come from "mate", the voice program (port/linux/src/mate_link.c).
-Twice a second the game tells it what is going on, in words, and what Kevin
+Twice a second the game tells it what is going on, in words, and what Gem
 can do, for mate's decision model to pick from ("state");
-what happens in between goes to it as events ("Kevin killed a grunt."). mate
-answers with the action Kevin takes. The game is only his body, carrying out
+what happens in between goes to it as events ("Gem killed a grunt."). mate
+answers with the action Gem takes. The game is only his body, carrying out
 the action every tick through unit_control, as a player's input drives a
 player's unit:
 - he aims at the enemy mate chose, turning quickly but not instantly and not
@@ -27,11 +27,11 @@ He does nothing of his own accord: no target, no shooting, no reloading.
 If he falls far behind the player he is put down beside him again, and if he
 dies he comes back a while later.
 
-mate also hears the player and speaks for Kevin; his voice is a 3D sound of
+mate also hears the player and speaks for Gem; his voice is a 3D sound of
 the game's mixer, placed as the game places a unit's dialogue (from his head,
 muffled by what's between, in the level's reverb), or over the radio when he's
 far off or out of sight.
-Kevin hears what the player hears: the game sends mate the dialogue it plays
+Gem hears what the player hears: the game sends mate the dialogue it plays
 (Cortana on the radio, cutscenes) to transcribe, and each new objective. His
 memory goes with the game's saves: mate keeps it at each checkpoint and brings
 it back when that save is loaded (dying forgets what happened since).
@@ -281,7 +281,7 @@ static struct companion_thing companion_weapons[COMPANION_MAXIMUM_THINGS];
 static short companion_weapon_count = 0;
 static struct companion_thing companion_vehicles[COMPANION_MAXIMUM_THINGS];
 
-/* the view mate asked for, Kevin's eyes on what the player sees: taken as the
+/* the view mate asked for, Gem's eyes on what the player sees: taken as the
 next frame is shown (d3d8_gl.c, companion_view_taken), with spots marked on
 it, a grid across the lower part of the view, each the ground there, which
 he can be sent to ("go_to") */
@@ -333,7 +333,7 @@ static boolean companion_is_red(
 	return FALSE;
 }
 
-/* whether this unit is Kevin, alive: the player's biped with no player and
+/* whether this unit is Gem, alive: the player's biped with no player and
 red armour (a loaded game has him at an index of its own) */
 static boolean companion_is_alive(
 	long unit_index,
@@ -446,7 +446,7 @@ static long companion_spawn(
 	companion_body.act_target_unit_index = NONE;
 	companion_body.goal_object_index = NONE;
 
-	platform_log("Kevin is here");
+	platform_log("Gem is here");
 	return unit_index;
 }
 
@@ -527,7 +527,7 @@ static boolean companion_unit_alive(
 	return unit && !TEST_FLAG(unit->object.damage_flags, _object_dead_bit);
 }
 
-/* the player's living enemies near Kevin, nearest first, and whether he can
+/* the player's living enemies near Gem, nearest first, and whether he can
 see each */
 static void companion_look_around(
 	long unit_index,
@@ -1244,7 +1244,7 @@ static void companion_reach(
 		if (unit_find_nearby_seat(unit_index, companion_body.goal_object_index, &seat_index) == _unit_nearby_seat_available &&
 			unit_enter_seat(unit_index, companion_body.goal_object_index, seat_index))
 		{
-			snprintf(text, sizeof(text), "Kevin got in the %s.", tag_name_strip_path(tag_get_name(object->definition_index)));
+			snprintf(text, sizeof(text), "Gem got in the %s.", tag_name_strip_path(tag_get_name(object->definition_index)));
 			companion_send_event(text);
 		}
 		else if (companion_seat_entrance(unit_index, companion_body.goal_object_index, &entrance) &&
@@ -1264,7 +1264,7 @@ static void companion_reach(
 			unit_drop_current_weapon(unit_index, TRUE);
 		if (unit_add_weapon_to_inventory(unit_index, companion_body.goal_object_index, _unit_add_weapon_normal))
 		{
-			snprintf(text, sizeof(text), "Kevin picked up a %s.", tag_name_strip_path(tag_get_name(object->definition_index)));
+			snprintf(text, sizeof(text), "Gem picked up a %s.", tag_name_strip_path(tag_get_name(object->definition_index)));
 			companion_send_event(text);
 		}
 	}
@@ -1497,13 +1497,13 @@ static void companion_set_order(
 
 		if (target)
 		{
-			terminal_printf(&red, "Kevin: %s, %s %d m away", companion_order_names[order],
+			terminal_printf(&red, "Gem: %s, %s %d m away", companion_order_names[order],
 				tag_name_strip_path(tag_get_name(unit_get(target->unit_index)->definition_index)),
 				(int)(target->distance * COMPANION_METRES_PER_UNIT));
 		}
 		else
 		{
-			terminal_printf(&red, "Kevin: %s%s", companion_order_names[order], hold_fire ? ", holding fire" : "");
+			terminal_printf(&red, "Gem: %s%s", companion_order_names[order], hold_fire ? ", holding fire" : "");
 		}
 	}
 	if (target_unit_index != companion_body.target_unit_index)
@@ -1540,7 +1540,7 @@ static long companion_unit_from_id(
 	return NONE;
 }
 
-/* mate's actions: what Kevin does, as its decision model chose from the
+/* mate's actions: what Gem does, as its decision model chose from the
 actions companion_send_state offered */
 static void companion_act(
 	short act,
@@ -1552,7 +1552,7 @@ static void companion_act(
 	companion_body.act = act;
 	companion_body.act_target_unit_index = target_unit_index;
 	companion_body.act_time = game_time_get();
-	terminal_printf(&red, "Kevin: %s", name);
+	terminal_printf(&red, "Gem: %s", name);
 }
 
 static void companion_handle_messages(
@@ -1832,7 +1832,7 @@ static void companion_groups_words(
 	}
 }
 
-/* what Kevin is doing, in words, each part after a comma (", following
+/* what Gem is doing, in words, each part after a comma (", following
 {player}, shooting at the grunt"); staying where he is, nothing of it */
 static void companion_describe_doing(
 	char *buffer,
@@ -1959,7 +1959,7 @@ static void companion_add_view(
 		strcat(actions, one);
 }
 
-/* the game as mate needs it: what is going on, in words, and what Kevin can
+/* the game as mate needs it: what is going on, in words, and what Gem can
 do (its decision model picks one) */
 static void companion_send_state(
 	long player_unit_index)
@@ -2028,7 +2028,7 @@ static void companion_send_state(
 		companion_describe_doing(doing, sizeof(doing));
 		object_get_origin(companion_unit_index, &origin);
 		metres = (int)(distance3d(&origin, &player_origin) * COMPANION_METRES_PER_UNIT);
-		snprintf(state, sizeof(state), "Kevin: %s, %s, %s%s. {player}: %s %s, %s, %s. Enemies:",
+		snprintf(state, sizeof(state), "Gem: %s, %s, %s%s. {player}: %s %s, %s, %s. Enemies:",
 			companion_health_words(unit->object.body_vitality),
 			companion_shield_words(unit->object.shield_vitality),
 			weapon, doing,
@@ -2132,7 +2132,7 @@ static void companion_send_state(
 	}
 	else
 	{
-		snprintf(state, sizeof(state), "Kevin is dead and will be back soon. {player}: %s, %s.",
+		snprintf(state, sizeof(state), "Gem is dead and will be back soon. {player}: %s, %s.",
 			companion_health_words(player_unit->object.body_vitality),
 			companion_shield_words(player_unit->object.shield_vitality));
 	}
@@ -2273,14 +2273,14 @@ static void companion_send_events(
 			}
 			{
 				char const *kind = companion_unit_kind(known[index]);
-				char const *who = killer && killer->object_index == companion_unit_index ? "Kevin killed" :
+				char const *who = killer && killer->object_index == companion_unit_index ? "Gem killed" :
 					killer && killer->player_index != NONE ? "{player} killed" : "Someone killed";
 
 				snprintf(one, sizeof(one), "%s a%s %s. ", who, strchr("aeiou", kind[0]) ? "n" : "", kind);
 				strncat(events, one, sizeof(events) - strlen(events) - 1);
 			}
 		}
-		/* (the player's shots: a player among those who hurt Kevin, newer than
+		/* (the player's shots: a player among those who hurt Gem, newer than
 		the hit last told; a hit later in the tick he last looked has that
 		tick's time, so the time he looked won't do) */
 		{
@@ -2301,20 +2301,20 @@ static void companion_send_events(
 				}
 			}
 			if (shot)
-				strncat(events, "{player} shot Kevin. ", sizeof(events) - strlen(events) - 1);
+				strncat(events, "{player} shot Gem. ", sizeof(events) - strlen(events) - 1);
 		}
 		if (kevin_shield > 0.f && unit->object.shield_vitality <= 0.f)
 		{
-			strncat(events, "Kevin's shields broke. ", sizeof(events) - strlen(events) - 1);
+			strncat(events, "Gem's shields broke. ", sizeof(events) - strlen(events) - 1);
 		}
 		if (kevin_health >= 0.3f && unit->object.body_vitality < 0.3f)
 		{
-			strncat(events, "Kevin is badly hurt. ", sizeof(events) - strlen(events) - 1);
+			strncat(events, "Gem is badly hurt. ", sizeof(events) - strlen(events) - 1);
 		}
 		if (game_time_get() - kevin_shield_time >= COMPANION_STATE_TICKS)
 		{
 			if (kevin_shield_before - unit->object.shield_vitality >= 0.3f && unit->object.shield_vitality > 0.f)
-				strncat(events, "Kevin is taking heavy fire. ", sizeof(events) - strlen(events) - 1);
+				strncat(events, "Gem is taking heavy fire. ", sizeof(events) - strlen(events) - 1);
 			kevin_shield_before = unit->object.shield_vitality;
 			kevin_shield_time = game_time_get();
 		}
@@ -2548,7 +2548,7 @@ static void companion_place_voice(
 	if (logged != dialog)
 	{
 		logged = dialog;
-		platform_log("Kevin's voice: dialogue's minimum distance %.2f, wet gain %.2f, gain %.2f",
+		platform_log("Gem's voice: dialogue's minimum distance %.2f, wet gain %.2f, gain %.2f",
 			dialog->minimum_distance, dialog->wet_gain, gain);
 	}
 	if (companion_unit_alive(companion_unit_index) &&
@@ -2707,7 +2707,7 @@ void companion_view_taken(
 
 /* the microphone's icon, at the left of the view where voice chat lists who
 talks: the menus' voice/microphone (Lucide's mic, white: tools/ce_menus.py),
-faint while Kevin hears you, red and struck through while muted; while mate
+faint while Gem hears you, red and struck through while muted; while mate
 is connected, in the campaign */
 void companion_draw_mic(
 	void)
@@ -2806,12 +2806,12 @@ boolean companion_console_command(
 		command++;
 	if (!*command)
 	{
-		terminal_printf(&red, "kevin <text>: tells Kevin something as the game master would (\"kevin you are dead\")");
+		terminal_printf(&red, "kevin <text>: tells Gem something as the game master would (\"kevin you are dead\")");
 		return TRUE;
 	}
 	if (!mate_link_connected())
 	{
-		terminal_printf(&red, "Kevin isn't listening (mate isn't connected)");
+		terminal_printf(&red, "Gem isn't listening (mate isn't connected)");
 		return TRUE;
 	}
 	/* (the text as a JSON string) */
@@ -2826,7 +2826,7 @@ boolean companion_console_command(
 	}
 	snprintf(json + length, sizeof(json) - length, "\"}");
 	mate_link_send(json);
-	terminal_printf(&red, "(to Kevin) %s", text);
+	terminal_printf(&red, "(to Gem) %s", text);
 	return TRUE;
 }
 
@@ -2868,7 +2868,7 @@ void companion_update(
 
 		if (found_unit_index == NONE && companion_unit_index != NONE)
 		{
-			companion_send_event("Kevin died.");
+			companion_send_event("Gem died.");
 			companion_unit_index = NONE;
 			companion_respawn_time = game_time_get() + COMPANION_RESPAWN_TICKS;
 		}
