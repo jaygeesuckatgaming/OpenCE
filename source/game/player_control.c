@@ -652,6 +652,7 @@ static void handle_one_player_input(
 			input.facing_delta.yaw = ai_input.facing_delta_yaw;
 			input.facing_delta.pitch = ai_input.facing_delta_pitch;
 			input.primary_trigger = ai_input.primary_trigger;
+			input.unit_control_flags |= ai_input.unit_control_flags;
 		}
 	}
 	if (local_player_get_player_index(local_player_index) != NONE)

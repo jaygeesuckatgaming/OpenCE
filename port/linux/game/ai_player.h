@@ -19,6 +19,8 @@ struct ai_player_input
 	real facing_delta_yaw;
 	real facing_delta_pitch;
 	real primary_trigger;
+	/* _unit_control_* flags: firing, reloading, and later the action button */
+	unsigned long unit_control_flags;
 };
 
 /* 1 if it filled input, 0 if the bot is off, or there is no local player or
