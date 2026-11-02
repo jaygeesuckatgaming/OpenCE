@@ -201,6 +201,25 @@ to shoot */
 #define COMPANION_PATHFINDING_RADIUS 0.3f
 /* how far ahead his paths look for objects in the way (boulders, wrecks) */
 #define COMPANION_OBSTACLE_REACH 16.f
+/* how far ahead he tests the ground before walking there */
+#define COMPANION_PROBE_AHEAD 2.0f
+/* how far below the floor he stands on the one ahead may be: a step or a
+slope, but not a cliff */
+#define COMPANION_MAX_DROP 2.5f
+/* how far down his floor is looked for at all */
+#define COMPANION_PROBE_DEPTH 8.0f
+/* a surface a player stands on has a normal this close to straight up: a
+bridge's side, or too steep a slope, is not one (a ramp is about 0.87) */
+#define COMPANION_FLOOR_NORMAL 0.5f
+/* how near the Chief may be for him to follow a drop down to him, and how
+far below the floor he stands on the Chief must be (world units) */
+#define COMPANION_DROP_FOLLOW 1.3f
+#define COMPANION_DROP_BELOW 0.4f
+/* what a probe is tested against: the level and the objects (crates, machines,
+vehicles), both faces of each */
+#define COMPANION_PROBE_FLAGS (FLAG(_collision_test_structure_bit) | FLAG(_collision_test_objects_bit) | \
+	_collision_test_objects_sight_blocking_flags | FLAG(_collision_test_front_facing_surfaces_bit) | \
+	FLAG(_collision_test_back_facing_surfaces_bit))
 /* his voice falls off beyond the dialogue class's minimum distance, or this
 (world units) if the map's class has none */
 #define COMPANION_VOICE_MINIMUM_DISTANCE 1.f
@@ -812,6 +831,99 @@ static real companion_flat_distance(
 	return (real)sqrt(dx * dx + dy * dy);
 }
 
+/* the floor under a point, if there is one within PROBE_DEPTH of it */
+static boolean companion_ground(
+	real_point3d const *point,
+	real_point3d *floor)
+{
+	struct collision_result collision;
+	real_point3d from = *point;
+	real_vector3d down = { 0.f, 0.f, -COMPANION_PROBE_DEPTH };
+
+	from.z += COMPANION_MAX_DROP * 0.5f;
+	if (!collision_test_vector(COMPANION_PROBE_FLAGS, &from, &down, NONE, &collision))
+		return FALSE;
+	if (collision.plane.n.k < COMPANION_FLOOR_NORMAL)
+		return FALSE;
+	*floor = collision.point;
+	return TRUE;
+}
+
+/* whether a step in this direction stays on ground a player would walk on:
+a slope or a step is fine, a void or a real drop is not */
+static boolean companion_walk_safe(
+	real_point3d const *position,
+	real_vector3d const *walk)
+{
+	real_vector3d step = *walk;
+	real_point3d here;
+	real_point3d ahead = *position;
+	real_point3d floor;
+	real reference;
+
+	step.k = 0.f;
+	if (magnitude3d(&step) < 0.01f)
+		return TRUE;
+	normalize3d(&step);
+
+	/* the floor he stands on, or his own height if that cannot be read */
+	reference = companion_ground(position, &here) ? here.z : position->z;
+
+	ahead.x += step.i * COMPANION_PROBE_AHEAD;
+	ahead.y += step.j * COMPANION_PROBE_AHEAD;
+
+	if (!companion_ground(&ahead, &floor))
+		return FALSE; /* a hole, or the edge of the level */
+	if (floor.z < reference - COMPANION_MAX_DROP)
+		return FALSE; /* a drop, not a step */
+	return TRUE;
+}
+
+/* the walk turned a little, to look for a way along an edge */
+static void companion_turn_walk(
+	real_vector3d const *walk,
+	real angle,
+	real_vector3d *out)
+{
+	real cosine = (real)cos(angle);
+	real sine = (real)sin(angle);
+
+	out->i = walk->i * cosine - walk->j * sine;
+	out->j = walk->i * sine + walk->j * cosine;
+	out->k = 0.f;
+}
+
+/* whether the drop the walk goes over is down to the Chief: he is below and
+near, and there is ground below to land on (never a void) */
+static boolean companion_drop_to_player(
+	real_point3d const *position,
+	real_point3d const *player,
+	real_vector3d const *walk)
+{
+	real_vector3d step = *walk;
+	real_point3d here;
+	real_point3d ahead = *position;
+	real_point3d floor;
+	real reference;
+
+	step.k = 0.f;
+	if (magnitude3d(&step) < 0.01f)
+		return FALSE;
+	normalize3d(&step);
+
+	reference = companion_ground(position, &here) ? here.z : position->z;
+	ahead.x += step.i * COMPANION_PROBE_AHEAD;
+	ahead.y += step.j * COMPANION_PROBE_AHEAD;
+
+	if (!companion_ground(&ahead, &floor))
+		return FALSE; /* nothing below to land on */
+	if (floor.z >= reference - COMPANION_MAX_DROP)
+		return FALSE; /* not a drop */
+	if (player->z >= reference - COMPANION_DROP_BELOW)
+		return FALSE; /* the Chief isn't below */
+	return companion_flat_distance(position, player) <= COMPANION_DROP_FOLLOW;
+}
+
 /* the player's view: its camera as main.c makes the player's window's
 (set_window_camera_values: smooth motion, the camera's shake, display.fov)
 and its projection, on the screen as drawn (render.camera's bounds, the
@@ -1341,6 +1453,42 @@ static void companion_control(
 		normalize3d(&to_target);
 		cross_product3d(global_up3d, &to_target, &walk);
 		scale_vector3d(&walk, companion_body.strafe_sign * 0.6f, &walk);
+	}
+
+	/* no walking off an edge: a way along it is looked for, else he stands;
+	   down to the Chief if he's just below, but never off a void */
+	if (magnitude3d(&walk) > 0.01f &&
+		!companion_walk_safe(&unit->object.position, &walk))
+	{
+		boolean follow_down = FALSE;
+
+		if (companion_unit_alive(player_unit_index))
+		{
+			real_point3d player_position;
+
+			object_get_origin(player_unit_index, &player_position);
+			follow_down = companion_drop_to_player(&unit->object.position, &player_position, &walk);
+		}
+		if (!follow_down)
+		{
+			static real const turns[] = { 0.6f, -0.6f, 1.2f, -1.2f, 1.8f, -1.8f, 3.14159f };
+			real_vector3d turned;
+			boolean found = FALSE;
+			int turn_index;
+
+			for (turn_index = 0; turn_index < (int)(sizeof(turns) / sizeof(turns[0])); turn_index++)
+			{
+				companion_turn_walk(&walk, turns[turn_index], &turned);
+				if (companion_walk_safe(&unit->object.position, &turned))
+				{
+					walk = turned;
+					found = TRUE;
+					break;
+				}
+			}
+			if (!found)
+				walk = *global_zero_vector3d;
+		}
 	}
 
 	/* (a grenade or a punch goes at its own enemy) */
